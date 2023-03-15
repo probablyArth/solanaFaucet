@@ -1,6 +1,18 @@
 import Head from "next/head";
+import { useState } from "react";
+
+enum Network {
+  testNet = "https://api.testnet.solana.com/",
+  devNet = "https://api.devnet.solana.com/",
+}
 
 export default function Home() {
+  const [network, setNetwork] = useState<Network>(Network.devNet);
+  const [address, setAddress] = useState<string>("");
+  const [amount, setAmount] = useState<number>(0);
+
+  const sendSol = () => {};
+
   return (
     <>
       <Head>
@@ -9,9 +21,59 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex flex-col justify-center items-center w-screen h-screen">
-        <div>
-          <h1>Solana drop thing</h1>
+      <main className="flex flex-col justify-center items-center w-screen h-screen bg-[#101010] text-white text-center">
+        <div
+          className="flex flex-col gap-4 items-center w-[80%] min-w-[320px]
+        "
+        >
+          <div className="flex items-center justify-between w-full">
+            <h1 className="text-5xl">Solana faucet</h1>
+            <div className="flex rounded-md border border-white">
+              <button
+                onClick={() => {
+                  setNetwork(Network.devNet);
+                }}
+                className={`${
+                  network === Network.devNet && "bg-white text-black"
+                } rounded-l-md p-4 transition-colors duration-300`}
+              >
+                DevNet
+              </button>
+              <button
+                onClick={() => {
+                  setNetwork(Network.testNet);
+                }}
+                className={`${
+                  network === Network.testNet && "bg-white text-black"
+                } rounded-r-md p-4 transition-colors duration-300`}
+              >
+                TestNet
+              </button>
+            </div>
+          </div>
+          <div className="flex w-full gap-4">
+            <input
+              type="text"
+              placeholder="your wallet address"
+              className="p-4 rounded-md text-black w-[70%]"
+              value={address}
+              onChange={(e) => {
+                setAddress(e.target.value.trim());
+              }}
+            />
+            <input
+              type="number"
+              placeholder="Amount"
+              className="p-4 rounded-md text-black w-[30%]"
+              value={amount}
+              onChange={(e) => {
+                setAmount(parseInt(e.target.value));
+              }}
+            />
+          </div>
+          <button className="bg-white text-black w-full rounded-md p-4 hover:opacity-70 transition-opacity">
+            Send
+          </button>
         </div>
       </main>
     </>
