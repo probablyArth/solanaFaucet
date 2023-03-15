@@ -1,17 +1,73 @@
+import { modals } from "@mantine/modals";
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import Head from "next/head";
 import { useState } from "react";
+import { TbExternalLink } from "react-icons/tb";
+import { LoadingOverlay } from "@mantine/core";
 
 enum Network {
   testNet = "https://api.testnet.solana.com/",
   devNet = "https://api.devnet.solana.com/",
 }
 
+const validateSolanaAddress = (addrs: string) => {
+  let publicKey: PublicKey;
+  try {
+    publicKey = new PublicKey(addrs);
+    return PublicKey.isOnCurve(publicKey.toBytes());
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+};
+
 export default function Home() {
   const [network, setNetwork] = useState<Network>(Network.devNet);
   const [address, setAddress] = useState<string>("");
-  const [amount, setAmount] = useState<number>(0);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const sendSol = () => {};
+  const sendSol = () => {
+    if (!validateSolanaAddress(address)) return setError("Invalid address!");
+    setError("");
+    const connection = new Connection(network);
+    setLoading(true);
+    connection
+      .requestAirdrop(new PublicKey(address), 1 * LAMPORTS_PER_SOL)
+      .then((value) => {
+        modals.open({
+          title: (
+            <h1 className="text-2xl text-green-500 font-semibold">Success!</h1>
+          ),
+          children: (
+            <h1 className="flex items-center gap-2">
+              Transaction of 1 sol successful! That may or may not be true
+              please check from this link.
+              <a
+                href={`https://explorer.solana.com/tx/${value}?cluster=${
+                  network === Network.devNet ? "devnet" : "testnet"
+                }`}
+                target="_blank"
+                className="color-white"
+              >
+                <TbExternalLink />
+              </a>
+            </h1>
+          ),
+        });
+      })
+      .catch((err) => {
+        modals.open({
+          title: (
+            <h1 className="text-2xl text-red-500 font-semibold">Error!</h1>
+          ),
+          children: <h1>An error occurred, please try again later!</h1>,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   return (
     <>
@@ -22,12 +78,16 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex flex-col justify-center items-center w-screen h-screen bg-[#101010] text-white text-center">
-        <div
-          className="flex flex-col gap-4 items-center w-[80%] min-w-[320px]
-        "
-        >
+        <div className="flex flex-col gap-4 items-center w-[80%] min-w-[320px]">
           <div className="flex items-center justify-between w-full">
-            <h1 className="text-5xl">Solana faucet</h1>
+            <div className="flex justify-center items-center gap-4">
+              <h1 className="text-5xl">Solana faucet</h1>
+              {error && (
+                <div className="text-red-500 bg-white p-2 rounded-sm font-extrabold">
+                  {error}
+                </div>
+              )}
+            </div>
             <div className="flex rounded-md border border-white">
               <button
                 onClick={() => {
@@ -55,25 +115,28 @@ export default function Home() {
             <input
               type="text"
               placeholder="your wallet address"
-              className="p-4 rounded-md text-black w-[70%]"
+              className="p-4 rounded-md text-black w-full"
               value={address}
               onChange={(e) => {
                 setAddress(e.target.value.trim());
               }}
             />
-            <input
-              type="number"
-              placeholder="Amount"
-              className="p-4 rounded-md text-black w-[30%]"
-              value={amount}
-              onChange={(e) => {
-                setAmount(parseInt(e.target.value));
-              }}
+          </div>
+          <div className="relative w-full">
+            <button
+              className="bg-white text-black w-full rounded-md p-4 hover:opacity-70 transition-opacity relative"
+              onClick={sendSol}
+            >
+              Send
+            </button>
+            <LoadingOverlay
+              loaderProps={{ size: "md", color: "black", variant: "oval" }}
+              overlayColor="#c5c5c5"
+              visible={loading}
+              className="rounded-md"
             />
           </div>
-          <button className="bg-white text-black w-full rounded-md p-4 hover:opacity-70 transition-opacity">
-            Send
-          </button>
+          <h1>Devnet and Testnet have a limit of 1 sol per day</h1>
         </div>
       </main>
     </>
