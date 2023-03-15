@@ -10,6 +10,33 @@ enum Network {
   devNet = "https://api.devnet.solana.com/",
 }
 
+const Footer = () => {
+  return (
+    <div className="flex flex-col mt-20">
+      <h1>
+        Made with ❤️ by{" "}
+        <a
+          href="https://github.com/probablyarth"
+          className="underline"
+          target="_blank"
+        >
+          @probablyarth
+        </a>
+      </h1>
+      <h1>
+        Insipired from{" "}
+        <a
+          href="https://www.youtube.com/watch?v=8NeZgmSfbYg"
+          target="_blank"
+          className="underline"
+        >
+          Harkirat Singh 🤓
+        </a>
+      </h1>
+    </div>
+  );
+};
+
 const validateSolanaAddress = (addrs: string) => {
   let publicKey: PublicKey;
   try {
@@ -138,6 +165,7 @@ export default function Home() {
           </div>
           <h1>Devnet and Testnet have a limit of 1 sol per day</h1>
         </div>
+        <Footer />
       </main>
     </>
   );
